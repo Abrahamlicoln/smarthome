@@ -3,11 +3,11 @@ class SmartHomeController {
         // HiveMQ Cloud Configuration
         this.MQTT_CONFIG = {
             host: '12482ae0fb9d46d2857c1cff3a27b543.s1.eu.hivemq.cloud',
-            port: 8884, // HiveMQ WebSocket Secure port
-            protocol: 'wss', // WebSocket Secure protocol
+            port: 8884,
+            protocol: 'wss',
             username: 'Abraham',
             password: 'Abrahamlicoln12@',
-            clientId: `smart-home-controller-${Math.random().toString(36).substring(7)}`
+            clientId: `mqtt_${Math.random().toString(16).slice(2, 8)}`
         };
 
         // Topic Namespace Configuration
@@ -60,29 +60,38 @@ class SmartHomeController {
     }
 
     initMQTT() {
-        // Connection options
         const options = {
+            keepalive: 60,
             clientId: this.MQTT_CONFIG.clientId,
             username: this.MQTT_CONFIG.username,
             password: this.MQTT_CONFIG.password,
-            reconnectPeriod: 5000,
             clean: true,
-            protocol: this.MQTT_CONFIG.protocol
+            reconnectPeriod: 1000,
+            connectTimeout: 30 * 1000,
+            rejectUnauthorized: false,
+            protocolVersion: 4,
+            will: {
+                topic: 'WillMsg',
+                payload: 'Connection Closed abnormally..!',
+                qos: 0,
+                retain: false
+            }
         };
 
-        // Create MQTT client with WebSocket Secure URL
-        this.client = mqtt.connect(
-            `${this.MQTT_CONFIG.protocol}://${this.MQTT_CONFIG.host}:${this.MQTT_CONFIG.port}`,
-            options
-        );
+        try {
+            // Create MQTT client with WebSocket Secure URL
+            const connectUrl = `${this.MQTT_CONFIG.protocol}://${this.MQTT_CONFIG.host}:${this.MQTT_CONFIG.port}`;
+            console.log('Attempting to connect to:', connectUrl);
+            this.client = mqtt.connect(connectUrl, options);
 
-        // Connection event handlers
-        this.client.on('connect', this.onConnect.bind(this));
-        this.client.on('error', this.onError.bind(this));
-        this.client.on('reconnect', this.onReconnect.bind(this));
-
-        // Message handling
-        this.client.on('message', this.handleMessage.bind(this));
+            // Connection event handlers
+            this.client.on('connect', this.onConnect.bind(this));
+            this.client.on('error', this.onError.bind(this));
+            this.client.on('reconnect', this.onReconnect.bind(this));
+            this.client.on('message', this.handleMessage.bind(this));
+        } catch (error) {
+            console.error('Connection error:', error);
+        }
     }
 
     onConnect() {
@@ -222,10 +231,16 @@ class SmartHomeController {
 
     onError(error) {
         console.error('MQTT Connection Error:', error);
-        this.client.publish(
-            this.TOPICS.STATE.ERRORS, 
-            JSON.stringify({ error: error.message })
-        );
+        // More detailed error logging
+        if (error.code) {
+            console.error('Error code:', error.code);
+        }
+        if (error.message) {
+            console.error('Error message:', error.message);
+        }
+        if (error.stack) {
+            console.error('Error stack:', error.stack);
+        }
     }
 
     onReconnect() {

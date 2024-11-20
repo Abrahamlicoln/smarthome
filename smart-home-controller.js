@@ -73,14 +73,14 @@ class SmartHomeController {
         const $brightnessSlider = $(`input[type="range"]`).eq(Object.keys(this.rooms).indexOf(room));
         const brightness = $brightnessSlider.length ? parseInt($brightnessSlider.val()) : 50;
 
-        // Send inverted state to Arduino
+        // Send the actual state to Arduino (not inverted)
         const message = {
             room: room,
-            state: !state,  // Invert the state before sending
+            state: state,  // Using actual state
             brightness: brightness
         };
 
-        // Update local state with original state
+        // Update local state
         this.rooms[room].state = state;
         this.rooms[room].brightness = brightness;
         this.rooms[room].lastToggleTime = new Date();
@@ -89,15 +89,14 @@ class SmartHomeController {
         console.log('Publishing control message:', message);
         this.client.publish('home/control', JSON.stringify(message));
 
-        // Update UI with original state
+        // Update UI
         const $bulb = $('.bulb').eq(Object.keys(this.rooms).indexOf(room));
         if (state) {
             $bulb.addClass('on').css('opacity', brightness / 100);
         } else {
-            $bulb.removeClass('on').css('opacity', 1);
+            $bulb.removeClass('on').css('opacity', 0.3); // Dimmed when off
         }
     }
-
 
     setBrightness(room, brightness) {
         const message = {
@@ -109,7 +108,7 @@ class SmartHomeController {
         this.client.publish('home/control', JSON.stringify(message));
     }
 
-     handleMessage(topic, message) {
+    handleMessage(topic, message) {
         try {
             const data = JSON.parse(message.toString());
             
@@ -117,28 +116,28 @@ class SmartHomeController {
                 const roomIndex = Object.keys(this.rooms).indexOf(data.room);
                 if (roomIndex !== -1) {
                     const roomName = Object.keys(this.rooms)[roomIndex];
-                    const invertedState = !data.state;  // Invert the received state
+                    const state = data.state;  // Use actual state, not inverted
                     
-                    // Update toggle with inverted state
+                    // Update toggle with actual state
                     const toggle = document.querySelectorAll('.light-toggle')[roomIndex];
-                    toggle.checked = invertedState;
+                    toggle.checked = state;
 
                     // Update brightness
                     const slider = document.querySelectorAll('input[type="range"]')[roomIndex];
                     slider.value = data.brightness;
 
-                    // Update bulb visualization using inverted state
+                    // Update bulb visualization using actual state
                     const bulb = document.querySelectorAll('.bulb')[roomIndex];
-                    if (invertedState) {
+                    if (state) {
                         bulb.classList.add('on');
                         bulb.style.opacity = data.brightness / 100;
                     } else {
                         bulb.classList.remove('on');
-                        bulb.style.opacity = 1;
+                        bulb.style.opacity = 0.3; // Dimmed when off
                     }
 
                     // Update local state
-                    this.rooms[roomName].state = invertedState;
+                    this.rooms[roomName].state = state;
                     this.rooms[roomName].brightness = data.brightness;
                 }
             }
@@ -154,7 +153,7 @@ class SmartHomeController {
         if (state) {
             $bulb.addClass('on').css('opacity', brightness / 100);
         } else {
-            $bulb.removeClass('on').css('opacity', 1);
+            $bulb.removeClass('on').css('opacity', 0.3); // Dimmed when off
         }
     }
 }
