@@ -69,19 +69,21 @@ class SmartHomeController {
         });
     }
 
-    toggleLight(room, state) {
+    toggleLight(room, toggleState) {
         const $brightnessSlider = $(`input[type="range"]`).eq(Object.keys(this.rooms).indexOf(room));
         const brightness = $brightnessSlider.length ? parseInt($brightnessSlider.val()) : 50;
 
-        // Send the actual state to Arduino (not inverted)
+        // Invert the toggle state before sending to Arduino
+        const invertedState = !toggleState;
+
         const message = {
             room: room,
-            state: state,  // Using actual state
+            state: invertedState,  // Send inverted state
             brightness: brightness
         };
 
-        // Update local state
-        this.rooms[room].state = state;
+        // Update local state with toggle state (not inverted)
+        this.rooms[room].state = toggleState;
         this.rooms[room].brightness = brightness;
         this.rooms[room].lastToggleTime = new Date();
 
@@ -89,19 +91,19 @@ class SmartHomeController {
         console.log('Publishing control message:', message);
         this.client.publish('home/control', JSON.stringify(message));
 
-        // Update UI
+        // Update UI based on toggle state
         const $bulb = $('.bulb').eq(Object.keys(this.rooms).indexOf(room));
-        if (state) {
+        if (toggleState) {
             $bulb.addClass('on').css('opacity', brightness / 100);
         } else {
-            $bulb.removeClass('on').css('opacity', 0.3); // Dimmed when off
+            $bulb.removeClass('on').css('opacity', 0.3);
         }
     }
 
     setBrightness(room, brightness) {
         const message = {
             room: room,
-            state: this.rooms[room].state,
+            state: !this.rooms[room].state,  // Invert state when sending
             brightness: brightness
         };
 
@@ -116,28 +118,28 @@ class SmartHomeController {
                 const roomIndex = Object.keys(this.rooms).indexOf(data.room);
                 if (roomIndex !== -1) {
                     const roomName = Object.keys(this.rooms)[roomIndex];
-                    const state = data.state;  // Use actual state, not inverted
+                    const invertedState = !data.state;  // Invert the received state
                     
-                    // Update toggle with actual state
+                    // Update toggle with inverted state
                     const toggle = document.querySelectorAll('.light-toggle')[roomIndex];
-                    toggle.checked = state;
+                    toggle.checked = invertedState;
 
                     // Update brightness
                     const slider = document.querySelectorAll('input[type="range"]')[roomIndex];
                     slider.value = data.brightness;
 
-                    // Update bulb visualization using actual state
+                    // Update bulb visualization using inverted state
                     const bulb = document.querySelectorAll('.bulb')[roomIndex];
-                    if (state) {
+                    if (invertedState) {
                         bulb.classList.add('on');
                         bulb.style.opacity = data.brightness / 100;
                     } else {
                         bulb.classList.remove('on');
-                        bulb.style.opacity = 0.3; // Dimmed when off
+                        bulb.style.opacity = 0.3;
                     }
 
                     // Update local state
-                    this.rooms[roomName].state = state;
+                    this.rooms[roomName].state = invertedState;
                     this.rooms[roomName].brightness = data.brightness;
                 }
             }
@@ -153,14 +155,17 @@ class SmartHomeController {
         if (state) {
             $bulb.addClass('on').css('opacity', brightness / 100);
         } else {
-            $bulb.removeClass('on').css('opacity', 0.3); // Dimmed when off
+            $bulb.removeClass('on').css('opacity', 0.3);
         }
     }
 }
 
-// Update the event listeners to use jQuery
+// Initialize all toggles to OFF position
 $(document).ready(() => {
     const controller = new SmartHomeController();
+
+    // Set all toggles to unchecked (OFF) initially
+    $('.light-toggle').prop('checked', false);
 
     // Light toggles
     $('.light-toggle').each((index, toggle) => {
