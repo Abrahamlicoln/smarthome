@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Lights</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ffd700',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .bulb {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .bulb::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .bulb.on {
+            background: #ffd700;
+            box-shadow: 0 0 50px #ffd700;
+        }
+
+        .bulb.on::after {
+            background: #fffaf0;
+        }
+
+        .bottom-nav {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex flex-col">
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-y-auto pb-20">
+        <!-- Header -->
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-b-3xl shadow-lg mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">My Home</h1>
+                    <p class="text-gray-500 dark:text-gray-400">Welcome back!</p>
+                </div>
+                <button id="theme-toggle" 
+                        class="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <i data-feather="moon" class="w-5 h-5 hidden dark:block text-gray-400"></i>
+                    <i data-feather="sun" class="w-5 h-5 block dark:hidden text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Rooms Grid -->
+        <div class="px-6 grid gap-4">
+            <!-- Living Room -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Living Room</h2>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Main Light</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="bulb"></div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer light-toggle">
+                        <div class="w-14 h-7 bg-gray-200 dark:bg-gray-700 rounded-full peer 
+                                  peer-checked:after:translate-x-full after:content-[''] 
+                                  after:absolute after:top-0.5 after:left-[4px] after:bg-white 
+                                  after:rounded-full after:h-6 after:w-6 after:transition-all 
+                                  peer-checked:bg-yellow-500"></div>
+                    </label>
+                </div>
+                <div class="mt-6">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Brightness</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 brightness-value">50%</span>
+                    </div>
+                    <input type="range" 
+                           class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer"
+                           min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- Bedroom -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Bedroom</h2>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Main Light</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="bulb"></div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer light-toggle">
+                        <div class="w-14 h-7 bg-gray-200 dark:bg-gray-700 rounded-full peer 
+                                  peer-checked:after:translate-x-full after:content-[''] 
+                                  after:absolute after:top-0.5 after:left-[4px] after:bg-white 
+                                  after:rounded-full after:h-6 after:w-6 after:transition-all 
+                                  peer-checked:bg-yellow-500"></div>
+                    </label>
+                </div>
+                <div class="mt-6">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Brightness</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 brightness-value">50%</span>
+                    </div>
+                    <input type="range" 
+                           class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer"
+                           min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- Kitchen -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Kitchen</h2>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Main Light</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="bulb"></div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer light-toggle">
+                        <div class="w-14 h-7 bg-gray-200 dark:bg-gray-700 rounded-full peer 
+                                  peer-checked:after:translate-x-full after:content-[''] 
+                                  after:absolute after:top-0.5 after:left-[4px] after:bg-white 
+                                  after:rounded-full after:h-6 after:w-6 after:transition-all 
+                                  peer-checked:bg-yellow-500"></div>
+                    </label>
+                </div>
+                <div class="mt-6">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Brightness</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 brightness-value">50%</span>
+                    </div>
+                    <input type="range" 
+                           class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer"
+                           min="0" max="100" value="50">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 right-0">
+        <div class="bottom-nav bg-white/80 dark:bg-gray-800/80 border-t dark:border-gray-700 px-6 py-3">
+            <div class="flex justify-between items-center">
+                <a href="index.html" class="flex flex-col items-center text-yellow-500">
+                    <i data-feather="home" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="usage.html" class="flex flex-col items-center text-gray-400 dark:text-gray-500">
+                    <i data-feather="activity" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">Usage</span>
+                </a>
+                <a href="about.html" class="flex flex-col items-center text-gray-400 dark:text-gray-500">
+                    <i data-feather="info" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">About</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Theme Toggle
+        $('#theme-toggle').on('click', () => {
+            $('html').toggleClass('dark');
+            localStorage.setItem('theme', $('html').hasClass('dark') ? 'dark' : 'light');
+        });
+
+        // Check for saved theme preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            $('html').addClass('dark');
+        } else {
+            $('html').removeClass('dark');
+        }
+
+        // Light Controls
+        $('.light-toggle').on('change', function() {
+            const $card = $(this).closest('div.rounded-2xl');
+            const $bulb = $card.find('.bulb');
+            
+            if (this.checked) {
+                $bulb.addClass('on');
+            } else {
+                $bulb.removeClass('on');
+            }
+        });
+
+        // Brightness Controls
+        $('input[type="range"]').on('input', function() {
+            const $card = $(this).closest('div.rounded-2xl');
+            const $valueDisplay = $card.find('.brightness-value');
+            const $bulb = $card.find('.bulb');
+            
+            $valueDisplay.text(`${this.value}%`);
+            
+            if ($bulb.hasClass('on')) {
+                $bulb.css('opacity', this.value / 100);
+            }
+        });
+
+        // Initialize SmartHomeController when DOM is ready
+        $(document).ready(() => {
+            const controller = new SmartHomeController();
+        });
+    </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+  <script src="smart-home-controller.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const controller = new SmartHomeController();
+    });
+  </script>
+</body>
+</html> 

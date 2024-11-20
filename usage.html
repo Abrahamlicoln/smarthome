@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage - Smart Home Lights</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ffd700',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .bottom-nav {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex flex-col">
+    <div class="flex-1 overflow-y-auto pb-20">
+        <!-- Header -->
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-b-3xl shadow-lg mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Usage Statistics</h1>
+                    <p class="text-gray-500 dark:text-gray-400">Power consumption overview</p>
+                </div>
+                <button id="theme-toggle" 
+                        class="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <i data-feather="moon" class="w-5 h-5 hidden dark:block text-gray-400"></i>
+                    <i data-feather="sun" class="w-5 h-5 block dark:hidden text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Usage Stats -->
+        <div class="px-6 space-y-6">
+            <!-- Today's Usage Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Today's Usage</h2>
+                <div class="chart-container">
+                    <canvas id="todayChart"></canvas>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Living Room</p>
+                        <p id="livingroom-usage" class="text-lg font-semibold text-gray-800 dark:text-white">0.0 kWh</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Bedroom</p>
+                        <p id="bedroom-usage" class="text-lg font-semibold text-gray-800 dark:text-white">0.0 kWh</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Kitchen</p>
+                        <p id="kitchen-usage" class="text-lg font-semibold text-gray-800 dark:text-white">0.0 kWh</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Summary -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Weekly Summary</h2>
+                <div class="chart-container">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Weekly Usage</p>
+                    <p class="text-2xl font-bold text-gray-800 dark:text-white">37.8 kWh</p>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                        <i data-feather="moon" class="w-6 h-6 text-yellow-500"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Energy Saving Tips</h2>
+                </div>
+                <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                    <li class="flex items-center gap-2">
+                        <i data-feather="check-circle" class="w-4 h-4 text-green-500"></i>
+                        Turn off lights when leaving rooms
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-feather="check-circle" class="w-4 h-4 text-green-500"></i>
+                        Use natural light during daytime
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-feather="check-circle" class="w-4 h-4 text-green-500"></i>
+                        Adjust brightness based on needs
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 right-0">
+        <div class="bottom-nav bg-white/80 dark:bg-gray-800/80 border-t dark:border-gray-700 px-6 py-3">
+            <div class="flex justify-between items-center">
+                <a href="index.html" class="flex flex-col items-center text-gray-400 dark:text-gray-500">
+                    <i data-feather="home" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="usage.html" class="flex flex-col items-center text-yellow-500">
+                    <i data-feather="activity" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">Usage</span>
+                </a>
+                <a href="about.html" class="flex flex-col items-center text-gray-400 dark:text-gray-500">
+                    <i data-feather="info" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">About</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Check for saved theme preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Chart Configuration
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#9ca3af' : '#4b5563';
+
+        // Today's Usage Chart
+        new Chart(document.getElementById('todayChart'), {
+            type: 'line',
+            data: {
+                labels: ['12AM', '4AM', '8AM', '12PM', '4PM', '8PM'],
+                datasets: [{
+                    label: 'Power Usage (kWh)',
+                    data: [0.2, 0.1, 0.5, 0.8, 0.6, 0.4],
+                    borderColor: '#ffd700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        ticks: { color: textColor },
+                        grid: { color: isDark ? '#374151' : '#e5e7eb' }
+                    },
+                    x: {
+                        ticks: { color: textColor },
+                        grid: { color: isDark ? '#374151' : '#e5e7eb' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Weekly Usage Chart
+        new Chart(document.getElementById('weeklyChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Power Usage (kWh)',
+                    data: [5.2, 5.7, 5.4, 5.8, 5.3, 5.1, 5.3],
+                    backgroundColor: '#ffd700',
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        ticks: { color: textColor },
+                        grid: { color: isDark ? '#374151' : '#e5e7eb' }
+                    },
+                    x: {
+                        ticks: { color: textColor },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+    <script src="mqtt-config.js"></script>
+    <script src="usage-controller.js"></script>
+    <script>
+        $(document).ready(() => {
+            const usageController = new UsageController();
+        });
+    </script>
+</body>
+</html> 

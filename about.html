@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Smart Home Lights</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ffd700',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .bottom-nav {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex flex-col">
+    <div class="flex-1 overflow-y-auto pb-20">
+        <!-- Header -->
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-b-3xl shadow-lg mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">About Us</h1>
+                    <p class="text-gray-500 dark:text-gray-400">Smart Home Light Control</p>
+                </div>
+                <button id="theme-toggle" 
+                        class="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <i data-feather="moon" class="w-5 h-5 hidden dark:block text-gray-400"></i>
+                    <i data-feather="sun" class="w-5 h-5 block dark:hidden text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- About Content -->
+        <div class="px-6 space-y-6">
+            <!-- App Info -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                        <i data-feather="home" class="w-8 h-8 text-yellow-500"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Smart Home Lights</h2>
+                        <p class="text-gray-500 dark:text-gray-400">Version 1.0.0</p>
+                    </div>
+                </div>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    A smart home automation solution for controlling your home lighting system using ESP32 technology.
+                </p>
+            </div>
+
+            <!-- Team Info -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Developed By</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <i data-feather="users" class="w-6 h-6 text-blue-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 dark:text-white">Cyberbotics Team</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Center for Cyberspace Studies, NSUK</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Key Features</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <i data-feather="check-circle" class="w-5 h-5 text-green-500"></i>
+                        Smart light control system
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <i data-feather="check-circle" class="w-5 h-5 text-green-500"></i>
+                        Real-time power usage monitoring
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <i data-feather="check-circle" class="w-5 h-5 text-green-500"></i>
+                        ESP32-based automation
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <i data-feather="check-circle" class="w-5 h-5 text-green-500"></i>
+                        Energy usage statistics
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Contact -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Contact Us</h2>
+                <div class="space-y-3">
+                    <a href="mailto:contact@cyberbotics.nsuk.edu.ng" 
+                       class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <i data-feather="mail" class="w-5 h-5 text-yellow-500"></i>
+                        contact@cyberbotics.nsuk.edu.ng
+                    </a>
+                    <p class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <i data-feather="map-pin" class="w-5 h-5 text-yellow-500"></i>
+                        Center for Cyberspace Studies, NSUK
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 right-0">
+        <div class="bottom-nav bg-white/80 dark:bg-gray-800/80 border-t dark:border-gray-700 px-6 py-3">
+            <div class="flex justify-between items-center">
+                <a href="index.html" class="flex flex-col items-center text-gray-400 dark:text-gray-500">
+                    <i data-feather="home" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+                <a href="usage.html" class="flex flex-col items-center text-gray-400 dark:text-gray-500">
+                    <i data-feather="activity" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">Usage</span>
+                </a>
+                <a href="about.html" class="flex flex-col items-center text-yellow-500">
+                    <i data-feather="info" class="w-6 h-6"></i>
+                    <span class="text-xs mt-1">About</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Check for saved theme preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</body>
+</html> 
